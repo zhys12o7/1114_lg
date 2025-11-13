@@ -54,59 +54,53 @@ class _WeatherWidgetState extends State<WeatherWidget> {
       child: Consumer<WeatherController>(
         builder: (context, controller, child) {
           // 로딩 중이거나 에러 시 기본값 표시
-          final temperature = controller.weather?.temperature.toInt() ?? 17;
+          final weather = controller.weather;
+          final temperature = weather?.temperature.toInt() ?? 17;
+          final condition = weather?.condition ?? 'Clear';
 
           return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.only(bottom: 4),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 날씨 아이콘 (태양)
                 _buildWeatherIcon(controller),
-
-                const SizedBox(width: 19), // gap
-
-                // 온도 표시 영역
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 온도 숫자
-                    Text(
-                      temperature.toString(),
-                      style: GoogleFonts.inter(
-                        fontSize: 72,
-                        fontWeight: FontWeight.w400, // Regular
-                        color: widget.textColor ?? const Color(0xFF6B6B6B),
-                        height: 90 / 72, // lineHeight / fontSize
-                        letterSpacing: 0.123,
-                      ),
-                    ),
-
-                    // 섭씨 기호 (°C)
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '°',
-                          style: GoogleFonts.inter(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w400,
-                            color: widget.textColor ?? const Color(0xFF6B6B6B),
-                            height: 1.2,
-                          ),
-                        ),
-                        Text(
-                          'C',
+                          temperature.toString(),
                           style: GoogleFonts.inter(
                             fontSize: 48,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: FontWeight.w500,
                             color: widget.textColor ?? const Color(0xFF6B6B6B),
                             height: 1.0,
                           ),
                         ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '°C',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w400,
+                            color: widget.textColor ?? const Color(0xFF6B6B6B),
+                          ),
+                        ),
                       ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      condition,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: widget.textColor ?? const Color(0xFF6B6B6B),
+                      ),
                     ),
                   ],
                 ),
@@ -171,3 +165,4 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     );
   }
 }
+

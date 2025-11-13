@@ -7,7 +7,22 @@ import 'package:flutter/foundation.dart';
 import 'media_service_interface.dart';
 
 MediaService getMediaService() {
-  debugPrint('[media] Using WebOS MediaService');
+  debugPrint('[media] ===== WebOS MediaService Loading =====');
+  debugPrint('[media] This file (media_service_web.dart) was imported');
+  debugPrint('[media] Checking for webOS object...');
+
+  // webOS 객체 존재 확인
+  try {
+    final hasWebOS = js.context.hasProperty('webOS');
+    debugPrint('[media] window.webOS exists: $hasWebOS');
+    if (hasWebOS) {
+      final webOSObj = js.context['webOS'];
+      debugPrint('[media] webOS object: $webOSObj');
+    }
+  } catch (e) {
+    debugPrint('[media] Error checking webOS: $e');
+  }
+
   return const _WebOSMediaService();
 }
 

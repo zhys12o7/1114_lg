@@ -23,7 +23,8 @@
         "applications.launcher",
         "applications.operation",
         "settings",
-        "system"
+        "system",
+        "media"
     ],
     "supportTouchMode": "full"
 }

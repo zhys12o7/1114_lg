@@ -206,34 +206,52 @@ class _HeroSpotlightState extends State<_HeroSpotlight> {
   }
 
   Future<void> _launchNativePlayback({bool auto = false}) async {
+    final timestamp = DateTime.now().toString();
+    debugPrint('[HomeScreen] [$timestamp] _launchNativePlayback called (auto: $auto)');
+    debugPrint('[HomeScreen] [$timestamp] videoUrl: ${widget.videoUrl}');
+
     if (_openingMedia) {
+      debugPrint('[HomeScreen] [$timestamp] Already opening media, skipping');
       return;
     }
     setState(() => _openingMedia = true);
     try {
+      debugPrint('[HomeScreen] [$timestamp] Calling mediaService.open()...');
       final sessionId = await _mediaService.open(widget.videoUrl);
+      final afterOpenTimestamp = DateTime.now().toString();
+      debugPrint('[HomeScreen] [$afterOpenTimestamp] mediaService.open() returned: $sessionId');
+
       if (!mounted) {
+        debugPrint('[HomeScreen] [$afterOpenTimestamp] Widget not mounted, returning');
         return;
       }
       if (sessionId == null) {
+        debugPrint('[HomeScreen] [$afterOpenTimestamp] sessionId is null - open failed');
         if (!auto) {
           _showMessage('영상 재생을 시작하지 못했어요.');
         }
       } else {
         _mediaSessionId = sessionId;
+        debugPrint('[HomeScreen] [$afterOpenTimestamp] Calling mediaService.play()...');
         await _mediaService.play(sessionId);
+        final afterPlayTimestamp = DateTime.now().toString();
+        debugPrint('[HomeScreen] [$afterPlayTimestamp] mediaService.play() completed');
         if (mounted && !auto) {
           _showMessage('TV에서 영상 재생을 시작했어요.');
         }
       }
     } catch (error) {
-      debugPrint('[media] open/play error: $error');
+      final errorTimestamp = DateTime.now().toString();
+      debugPrint('[HomeScreen] [$errorTimestamp] ERROR: $error');
+      debugPrint('[HomeScreen] [$errorTimestamp] Error type: ${error.runtimeType}');
       if (mounted && !auto) {
         _showMessage('영상 재생 중 오류가 발생했어요.');
       }
     } finally {
       if (mounted) {
         setState(() => _openingMedia = false);
+        final finalTimestamp = DateTime.now().toString();
+        debugPrint('[HomeScreen] [$finalTimestamp] _launchNativePlayback completed');
       }
     }
   }

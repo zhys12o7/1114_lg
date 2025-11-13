@@ -4,13 +4,13 @@ import 'package:video_player/video_player.dart';
 class CustomVideoWidget extends StatefulWidget {
   const CustomVideoWidget({
     super.key,
-    required this.videoUrl,
+    String? videoUrl,
     this.width,
     this.height,
     this.autoplay = true,
     this.looping = true,
-    this.volume = 0.0,
-  });
+    this.volume = 1.0,
+  }) : videoUrl = videoUrl ?? defaultVideoUrl;
 
   final String videoUrl;
   final double? width;
@@ -18,6 +18,9 @@ class CustomVideoWidget extends StatefulWidget {
   final bool autoplay;
   final bool looping;
   final double volume;
+
+  static const String defaultVideoUrl =
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
   @override
   State<CustomVideoWidget> createState() => _CustomVideoWidgetState();
@@ -30,24 +33,18 @@ class _CustomVideoWidgetState extends State<CustomVideoWidget> {
   @override
   void initState() {
     super.initState();
-    _initializeController();
+    _initializeVideo();
   }
 
   @override
   void didUpdateWidget(CustomVideoWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     if (oldWidget.videoUrl != widget.videoUrl) {
-      _replaceController();
-      return;
-    }
-
-    if (oldWidget.looping != widget.looping) {
-      _controller.setLooping(widget.looping);
-    }
-
-    if (oldWidget.volume != widget.volume) {
-      _controller.setVolume(_clampVolume(widget.volume));
+      _initializeVideo(replace: true);
+    } else {
+      _controller
+        ..setLooping(widget.looping)
+        ..setVolume(_clampVolume(widget.volume));
     }
   }
 
@@ -57,31 +54,29 @@ class _CustomVideoWidgetState extends State<CustomVideoWidget> {
     super.dispose();
   }
 
-  void _initializeController() {
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
-    _controller
+  void _initializeVideo({bool replace = false}) {
+    final controller =
+        VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+    controller
       ..setLooping(widget.looping)
       ..setVolume(_clampVolume(widget.volume));
-    _initializeFuture = _controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      if (widget.autoplay) {
-        _controller.play();
-      }
-      setState(() {});
-    });
-  }
 
-  void _replaceController() {
-    final VideoPlayerController oldController = _controller;
-    _initializeController();
-    oldController.pause();
-    oldController.dispose();
+    final future = controller.initialize().then((_) {
+      if (widget.autoplay) {
+        controller.play();
+      }
+    });
+
+    if (replace) {
+      _controller.dispose();
+    }
+
+    _controller = controller;
+    _initializeFuture = future;
     setState(() {});
   }
 
-  double _clampVolume(double volume) => volume.clamp(0, 1).toDouble();
+  double _clampVolume(double volume) => volume.clamp(0.0, 1.0);
 
   @override
   Widget build(BuildContext context) {

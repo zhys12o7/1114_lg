@@ -1,24 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:frontend/webos_service_helper/utils.dart' as webos_utils;
 
 import 'media_service_interface.dart';
 
 MediaService getMediaService() {
-  debugPrint('[media] Using Native webOS MediaService (MethodChannel)');
+  debugPrint('[media] Using Native webOS MediaService (WebOSServiceBridge)');
   return const _NativeWebOSMediaService();
 }
 
 class _NativeWebOSMediaService extends MediaService {
   const _NativeWebOSMediaService();
 
-  static const platform = MethodChannel('com.lg.homescreen/luna');
-
   @override
   Future<String?> open(String uri, {Map<String, dynamic>? options}) async {
     final timestamp = DateTime.now().toString();
-    debugPrint('[media] [$timestamp] open() called via MethodChannel');
+    debugPrint('[media] [$timestamp] open() called via WebOSServiceBridge');
     debugPrint('[media] [$timestamp] uri: $uri');
 
     try {
@@ -38,21 +36,21 @@ class _NativeWebOSMediaService extends MediaService {
       debugPrint('[media] [$timestamp] Method: open');
       debugPrint('[media] [$timestamp] Parameters: $parameters');
 
-      final result = await platform.invokeMethod('callLunaService', {
-        'service': 'luna://com.webos.media',
-        'method': 'open',
-        'parameters': parameters,
-      });
+      final result = await webos_utils.callOneReply(
+        uri: 'luna://com.webos.media',
+        method: 'open',
+        payload: parameters,
+      );
 
       debugPrint('[media] [$timestamp] Luna Service response: $result');
 
-      if (result != null && result is Map) {
+      if (result != null && result['returnValue'] == true) {
         final sessionId = result['sessionId'] as String?;
         debugPrint('[media] [$timestamp] sessionId: $sessionId');
         return sessionId;
       }
 
-      debugPrint('[media] [$timestamp] No sessionId in response');
+      debugPrint('[media] [$timestamp] No sessionId in response or returnValue is false');
       return null;
     } catch (e) {
       debugPrint('[media] [$timestamp] open FAILED: $e');
@@ -77,13 +75,17 @@ class _NativeWebOSMediaService extends MediaService {
     debugPrint('[media] [$timestamp] $method() called with sessionId: $sessionId');
 
     try {
-      await platform.invokeMethod('callLunaService', {
-        'service': 'luna://com.webos.media',
-        'method': method,
-        'parameters': {'sessionId': sessionId},
-      });
+      final result = await webos_utils.callOneReply(
+        uri: 'luna://com.webos.media',
+        method: method,
+        payload: {'sessionId': sessionId},
+      );
 
-      debugPrint('[media] [$timestamp] $method SUCCESS');
+      if (result != null && result['returnValue'] == true) {
+        debugPrint('[media] [$timestamp] $method SUCCESS');
+      } else {
+        debugPrint('[media] [$timestamp] $method FAILED: returnValue is false');
+      }
     } catch (e) {
       debugPrint('[media] [$timestamp] $method FAILED: $e');
     }

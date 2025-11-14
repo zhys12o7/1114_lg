@@ -1,17 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:frontend/webos_service_helper/utils.dart' as webos_utils;
 import 'package:http/http.dart' as http;
 import 'weather_model.dart';
 
 /// webOS 환경용 날씨 데이터 저장소
 ///
-/// 역할: webOS Luna Service를 통한 네트워크 상태 확인 후 날씨 API 호출
+/// 역할: webOS Luna Service를 통한 네트워크 상태 확인 후 날씨 API 호출 (WebOSServiceBridge)
 /// - Connection Manager로 인터넷 연결 확인
 /// - 연결 확인 후 외부 날씨 API 호출 (OpenWeatherMap 등)
 /// - 에러 처리 및 재시도 로직
 class WeatherRepositoryWebOS {
-  static const platform = MethodChannel('com.lg.homescreen/luna');
+  int? _connectionSubscriptionHashCode;
   static const String _apiKey = '84001a617861fd360e81ffa35df64b3e';
   static const String _baseUrl = 'https://api.openweathermap.org/data/2.5';
 
@@ -21,19 +21,17 @@ class WeatherRepositoryWebOS {
   /// 반환: 연결 가능 여부 (true/false)
   Future<bool> checkInternetConnection() async {
     try {
-      final result = await platform.invokeMethod('callLunaService', {
-        'service': 'luna://com.webos.service.connectionmanager',
-        'method': 'getStatus',
-        'parameters': {},
-      });
+      final result = await webos_utils.callOneReply(
+        uri: 'luna://com.webos.service.connectionmanager',
+        method: 'getStatus',
+        payload: {},
+      );
 
       if (result == null) return false;
 
-      final data = result as Map<dynamic, dynamic>;
-
       // isInternetConnectionAvailable 필드 확인
       final isConnected =
-          data['isInternetConnectionAvailable'] as bool? ?? false;
+          result['isInternetConnectionAvailable'] as bool? ?? false;
 
       debugPrint('webOS 인터넷 연결 상태: $isConnected');
       return isConnected;
@@ -150,23 +148,31 @@ class WeatherRepositoryWebOS {
     Function(bool isConnected) onStatusChange,
   ) async {
     try {
-      await platform.invokeMethod('callLunaService', {
-        'service': 'luna://com.webos.service.connectionmanager',
-        'method': 'getStatus',
-        'parameters': {'subscribe': true},
-      });
-
-      platform.setMethodCallHandler((call) async {
-        if (call.method == 'onConnectionStatusUpdate') {
-          final data = call.arguments as Map<dynamic, dynamic>;
+      _connectionSubscriptionHashCode = webos_utils.subscribe(
+        uri: 'luna://com.webos.service.connectionmanager',
+        method: 'getStatus',
+        payload: {'subscribe': true},
+        onComplete: (response) {
           final isConnected =
-              data['isInternetConnectionAvailable'] as bool? ?? false;
+              response['isInternetConnectionAvailable'] as bool? ?? false;
           onStatusChange(isConnected);
-        }
-        return null;
-      });
+        },
+        onError: (error) {
+          debugPrint('Connection Manager 구독 에러: $error');
+        },
+      );
+      debugPrint('Connection Manager 구독 성공 (hashCode: $_connectionSubscriptionHashCode)');
     } catch (e) {
       debugPrint('Connection Manager 구독 실패: $e');
+    }
+  }
+
+  /// 구독 해제
+  void unsubscribeFromConnectionStatus() {
+    if (_connectionSubscriptionHashCode != null) {
+      webos_utils.cancel(_connectionSubscriptionHashCode!);
+      _connectionSubscriptionHashCode = null;
+      debugPrint('Connection Manager 구독 해제');
     }
   }
 }

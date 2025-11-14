@@ -39,9 +39,9 @@ class _NativeWebOSMediaService extends MediaService {
       debugPrint('[Luna API] 전체 응답: $result');
 
       if (result != null && result['returnValue'] == true) {
-        final sessionId = result['sessionId'] as String?;
-        debugPrint('[Luna API] ✅ 성공 - sessionId: $sessionId');
-        return sessionId;
+        final mediaId = result['mediaId'] as String?;
+        debugPrint('[Luna API] ✅ 성공 - mediaId: $mediaId');
+        return mediaId;
       }
 
       // 실패 시 에러 메시지 출력
@@ -76,7 +76,7 @@ class _NativeWebOSMediaService extends MediaService {
       final result = await webos_utils.callOneReply(
         uri: 'luna://com.webos.media',
         method: method,
-        payload: {'sessionId': sessionId},
+        payload: {'mediaId': sessionId}, // sessionId는 실제로 mediaId
       );
 
       if (result != null && result['returnValue'] == true) {

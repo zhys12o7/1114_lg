@@ -58,48 +58,6 @@ class _NativeWebOSMediaService extends MediaService {
   }
 
   @override
-  Future<void> setDisplayWindow(String sessionId, {
-    required int x,
-    required int y,
-    required int width,
-    required int height,
-  }) async {
-    try {
-      debugPrint('[Luna API] 호출: luna://com.webos.media/setDisplayWindow');
-
-      final result = await webos_utils.callOneReply(
-        uri: 'luna://com.webos.media',
-        method: 'setDisplayWindow',
-        payload: {
-          'mediaId': sessionId,
-          'sink': 'MAIN',
-          'fullScreen': true,
-          'source': {
-            'x': x,
-            'y': y,
-            'width': width,
-            'height': height,
-          },
-          'destination': {
-            'x': 0,
-            'y': 0,
-            'width': 1920,
-            'height': 1080,
-          },
-        },
-      );
-
-      if (result != null && result['returnValue'] == true) {
-        debugPrint('[Luna API] ✅ setDisplayWindow 성공');
-      } else {
-        debugPrint('[Luna API] ❌ setDisplayWindow 실패');
-      }
-    } catch (e) {
-      debugPrint('[Luna API] ❌ setDisplayWindow 에러: $e');
-    }
-  }
-
-  @override
   Future<void> play(String sessionId) => _invokeSimple('play', sessionId);
 
   @override

@@ -233,19 +233,7 @@ class _HeroSpotlightState extends State<_HeroSpotlight> {
       } else {
         _mediaSessionId = sessionId;
 
-        // 디스플레이 윈도우 설정
-        debugPrint('[HomeScreen] [$afterOpenTimestamp] Calling mediaService.setDisplayWindow()...');
-        await _mediaService.setDisplayWindow(
-          sessionId,
-          x: 0,
-          y: 0,
-          width: 1920,
-          height: 1080,
-        );
-        final afterWindowTimestamp = DateTime.now().toString();
-        debugPrint('[HomeScreen] [$afterWindowTimestamp] mediaService.setDisplayWindow() completed');
-
-        debugPrint('[HomeScreen] [$afterWindowTimestamp] Calling mediaService.play()...');
+        debugPrint('[HomeScreen] [$afterOpenTimestamp] Calling mediaService.play()...');
         await _mediaService.play(sessionId);
         final afterPlayTimestamp = DateTime.now().toString();
         debugPrint('[HomeScreen] [$afterPlayTimestamp] mediaService.play() completed');

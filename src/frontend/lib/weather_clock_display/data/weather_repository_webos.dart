@@ -29,16 +29,14 @@ class WeatherRepositoryWebOS {
 
       if (result == null) return false;
 
-      // isInternetConnectionAvailable 필드 확인
       final isConnected =
           result['isInternetConnectionAvailable'] as bool? ?? false;
 
-      debugPrint('webOS 인터넷 연결 상태: $isConnected');
+      debugPrint('[Luna API] 연결 상태: $isConnected');
       return isConnected;
     } catch (e) {
-      debugPrint('Connection Manager 호출 실패: $e');
-      // Luna Service 실패 시 일반 HTTP 시도
-      return true; // 시도는 해보자
+      debugPrint('[Luna API] ❌ 에러: $e');
+      return true;
     }
   }
 
@@ -148,6 +146,8 @@ class WeatherRepositoryWebOS {
     Function(bool isConnected) onStatusChange,
   ) async {
     try {
+      debugPrint('[Luna API] 구독: luna://com.webos.service.connectionmanager/getStatus');
+
       _connectionSubscriptionHashCode = webos_utils.subscribe(
         uri: 'luna://com.webos.service.connectionmanager',
         method: 'getStatus',
@@ -158,12 +158,12 @@ class WeatherRepositoryWebOS {
           onStatusChange(isConnected);
         },
         onError: (error) {
-          debugPrint('Connection Manager 구독 에러: $error');
+          debugPrint('[Luna API] ❌ 구독 에러: $error');
         },
       );
-      debugPrint('Connection Manager 구독 성공 (hashCode: $_connectionSubscriptionHashCode)');
+      debugPrint('[Luna API] ✅ 구독 성공');
     } catch (e) {
-      debugPrint('Connection Manager 구독 실패: $e');
+      debugPrint('[Luna API] ❌ 에러: $e');
     }
   }
 
@@ -172,7 +172,7 @@ class WeatherRepositoryWebOS {
     if (_connectionSubscriptionHashCode != null) {
       webos_utils.cancel(_connectionSubscriptionHashCode!);
       _connectionSubscriptionHashCode = null;
-      debugPrint('Connection Manager 구독 해제');
+      debugPrint('[Luna API] 구독 해제');
     }
   }
 }

@@ -26,7 +26,6 @@ class ClockService extends ChangeNotifier {
 
   ClockService() {
     _isWebOS = RepositoryFactory.isWebOS;
-    debugPrint('ClockService 초기화 - webOS 모드: $_isWebOS');
   }
 
   /// 시계 서비스 시작
@@ -58,9 +57,8 @@ class ClockService extends ChangeNotifier {
     if (_isSubscribed) return;
 
     try {
-      debugPrint('Luna Service 시작 시도 (WebOSServiceBridge)...');
+      debugPrint('[Luna API] 구독: luna://com.webos.service.systemservice/time/getSystemTime');
 
-      // WebOSServiceBridge의 subscribe 사용
       _subscriptionHashCode = webos_utils.subscribe(
         uri: 'luna://com.webos.service.systemservice',
         method: 'time/getSystemTime',
@@ -69,16 +67,14 @@ class ClockService extends ChangeNotifier {
           _handleTimeResponse(response);
         },
         onError: (error) {
-          debugPrint('Luna Service 구독 에러: $error');
+          debugPrint('[Luna API] ❌ 구독 에러: $error');
         },
       );
 
       _isSubscribed = true;
-      debugPrint('Luna Service 구독 성공 (hashCode: $_subscriptionHashCode)');
+      debugPrint('[Luna API] ✅ 구독 성공');
     } catch (e) {
-      debugPrint('Luna Service 호출 실패: $e');
-      // 실패 시 일반 Timer로 대체
-      debugPrint('일반 Timer로 대체합니다.');
+      debugPrint('[Luna API] ❌ 에러: $e - Timer로 대체');
       _startTimer();
     }
   }
@@ -115,11 +111,9 @@ class ClockService extends ChangeNotifier {
         _offset = data['offset'] as int? ?? 0;
 
         notifyListeners();
-
-        debugPrint('시간 업데이트: $_currentTime, 시간대: $_timezone');
       }
     } catch (e) {
-      debugPrint('시간 응답 파싱 오류: $e');
+      debugPrint('[Luna API] ❌ 응답 파싱 오류: $e');
     }
   }
 
@@ -131,9 +125,9 @@ class ClockService extends ChangeNotifier {
       webos_utils.cancel(_subscriptionHashCode!);
       _isSubscribed = false;
       _subscriptionHashCode = null;
-      debugPrint('Luna Service 구독 중지');
+      debugPrint('[Luna API] 구독 중지');
     } catch (e) {
-      debugPrint('Luna Service 취소 실패: $e');
+      debugPrint('[Luna API] ❌ 구독 취소 실패: $e');
     }
   }
 
@@ -143,14 +137,12 @@ class ClockService extends ChangeNotifier {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       _updateTime();
     });
-    debugPrint('일반 Timer 시작');
   }
 
   /// 일반 Timer 중지
   void _stopTimer() {
     _timer?.cancel();
     _timer = null;
-    debugPrint('일반 Timer 중지');
   }
 
   /// 시간 업데이트 (로컬 환경용)

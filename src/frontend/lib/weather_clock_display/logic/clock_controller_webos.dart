@@ -36,7 +36,8 @@ class ClockControllerWebOS extends ChangeNotifier {
     if (_isSubscribed) return;
 
     try {
-      // WebOSServiceBridge subscribe 사용
+      debugPrint('[Luna API] 구독: luna://com.webos.service.systemservice/time/getSystemTime');
+
       _subscriptionHashCode = webos_utils.subscribe(
         uri: 'luna://com.webos.service.systemservice',
         method: 'time/getSystemTime',
@@ -45,15 +46,14 @@ class ClockControllerWebOS extends ChangeNotifier {
           _handleTimeResponse(response);
         },
         onError: (error) {
-          debugPrint('Luna Service 구독 에러: $error');
+          debugPrint('[Luna API] ❌ 구독 에러: $error');
         },
       );
 
       _isSubscribed = true;
-      debugPrint('Luna Service 구독 성공 (hashCode: $_subscriptionHashCode)');
+      debugPrint('[Luna API] ✅ 구독 성공');
     } catch (e) {
-      debugPrint('Luna Service 호출 실패: $e');
-      // 실패 시 일반 Timer 사용
+      debugPrint('[Luna API] ❌ 에러: $e - Timer로 대체');
       _fallbackToTimer();
     }
   }
@@ -92,7 +92,7 @@ class ClockControllerWebOS extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('시간 응답 파싱 오류: $e');
+      debugPrint('[Luna API] ❌ 응답 파싱 오류: $e');
     }
   }
 
@@ -112,9 +112,9 @@ class ClockControllerWebOS extends ChangeNotifier {
       webos_utils.cancel(_subscriptionHashCode!);
       _isSubscribed = false;
       _subscriptionHashCode = null;
-      debugPrint('Luna Service 구독 중지');
+      debugPrint('[Luna API] 구독 중지');
     } catch (e) {
-      debugPrint('Luna Service 취소 실패: $e');
+      debugPrint('[Luna API] ❌ 구독 취소 실패: $e');
     }
   }
 

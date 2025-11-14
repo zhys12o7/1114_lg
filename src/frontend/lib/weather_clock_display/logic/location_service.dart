@@ -27,9 +27,9 @@ class LocationService {
   /// luna://com.webos.service.systemservice/getPreferences 호출
   /// 시스템 설정의 도시 정보 반환
   Future<String> _getCityWebOS() async {
-    debugPrint('webOS 환경: 시스템 설정에서 도시 정보 가져오기 (WebOSServiceBridge)');
-
     try {
+      debugPrint('[Luna API] 호출: luna://com.webos.service.systemservice/getPreferences');
+
       final result = await webos_utils.callOneReply(
         uri: 'luna://com.webos.service.systemservice',
         method: 'getPreferences',
@@ -39,26 +39,25 @@ class LocationService {
       );
 
       if (result == null) {
-        debugPrint('시스템 설정 응답 없음 - 기본 도시 사용');
+        debugPrint('[Luna API] ❌ 응답 없음 - 기본 도시 사용');
         return _defaultCity;
       }
 
       if (result['returnValue'] == true) {
-        // 도시 정보 추출
         final settings = result['settings'] as Map<dynamic, dynamic>?;
         if (settings != null) {
           final city = settings['city'] as String?;
           if (city != null && city.isNotEmpty) {
-            debugPrint('시스템 도시: $city');
+            debugPrint('[Luna API] ✅ 성공 - 도시: $city');
             return city;
           }
         }
       }
 
-      debugPrint('도시 정보 없음 - 기본 도시 사용');
+      debugPrint('[Luna API] ❌ 도시 정보 없음 - 기본 도시 사용');
       return _defaultCity;
     } catch (e) {
-      debugPrint('시스템 설정 가져오기 실패: $e - 기본 도시 사용');
+      debugPrint('[Luna API] ❌ 에러: $e - 기본 도시 사용');
       return _defaultCity;
     }
   }
@@ -67,7 +66,6 @@ class LocationService {
   ///
   /// 기본 도시 반환
   String _getCityLocal() {
-    debugPrint('로컬 환경: 기본 도시 사용 ($_defaultCity)');
     return _defaultCity;
   }
 }

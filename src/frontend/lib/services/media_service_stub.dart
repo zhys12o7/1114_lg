@@ -36,13 +36,20 @@ class _NativeWebOSMediaService extends MediaService {
         payload: parameters,
       );
 
+      debugPrint('[Luna API] 전체 응답: $result');
+
       if (result != null && result['returnValue'] == true) {
         final sessionId = result['sessionId'] as String?;
         debugPrint('[Luna API] ✅ 성공 - sessionId: $sessionId');
         return sessionId;
       }
 
+      // 실패 시 에러 메시지 출력
+      final errorText = result?['errorText'] ?? 'Unknown error';
+      final errorCode = result?['errorCode'] ?? 'N/A';
       debugPrint('[Luna API] ❌ 실패 - returnValue: ${result?['returnValue']}');
+      debugPrint('[Luna API] ❌ 에러 코드: $errorCode');
+      debugPrint('[Luna API] ❌ 에러 메시지: $errorText');
       return null;
     } catch (e) {
       debugPrint('[Luna API] ❌ 에러: $e');

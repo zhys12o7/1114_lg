@@ -28,11 +28,11 @@ class _NativeWebOSMediaService extends MediaService {
         parameters.addAll(options);
       }
 
-      debugPrint('[Luna API] 호출: luna://com.webos.media/open');
+      debugPrint('[Luna API] 호출: luna://com.webos.media/load');
 
       final result = await webos_utils.callOneReply(
         uri: 'luna://com.webos.media',
-        method: 'open',
+        method: 'load',
         payload: parameters,
       );
 

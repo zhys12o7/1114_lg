@@ -88,6 +88,17 @@ class _WebOSMediaService extends MediaService {
   }
 
   @override
+  Future<void> setDisplayWindow(String sessionId, {
+    required int x,
+    required int y,
+    required int width,
+    required int height,
+  }) {
+    // Web implementation - not needed for web version
+    return Future.value();
+  }
+
+  @override
   Future<void> play(String sessionId) => _invokeSimple('play', sessionId);
 
   @override

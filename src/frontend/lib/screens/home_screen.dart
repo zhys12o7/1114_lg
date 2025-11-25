@@ -232,6 +232,7 @@ class _HeroSpotlightState extends State<_HeroSpotlight> {
         }
       } else {
         _mediaSessionId = sessionId;
+
         debugPrint('[HomeScreen] [$afterOpenTimestamp] Calling mediaService.play()...');
         await _mediaService.play(sessionId);
         final afterPlayTimestamp = DateTime.now().toString();
